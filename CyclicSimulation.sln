@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+# SharpDevelop 3.2.0.5777
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CyclicSimulation", "CyclicSimulation.csproj", "{CCEB6580-1C7B-444C-9166-6AA6ADCD7E85}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CCEB6580-1C7B-444C-9166-6AA6ADCD7E85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCEB6580-1C7B-444C-9166-6AA6ADCD7E85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCEB6580-1C7B-444C-9166-6AA6ADCD7E85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCEB6580-1C7B-444C-9166-6AA6ADCD7E85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+EndGlobal
