@@ -33,6 +33,7 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Simulation.cs" />
+    <Compile Include="SimulationParameters.cs" />
     <Compile Include="Solver.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Well.cs" />

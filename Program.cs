@@ -9,7 +9,7 @@
 using System;
 using System.IO;
 
-namespace CyclicSimulatuin
+namespace CyclicSimulation
 {
 	class Program
 	{
@@ -18,143 +18,91 @@ namespace CyclicSimulatuin
 			CyclesSimulation();
 			
 		}
-		
-		private static void GurCyclesSimulation()
-		{
-			//double Nf=1e5;
-			double MutationRatio=0 ;
 
-			
+		private static void CyclesSimulation()
+		{
+			double Nf=1e9;
+			double MutationRatio=1e-8 ;
+			int seed ;
 			double tauNormalKill=10;
 			double tauPersisterKill=100;
 			
 			double tauGrowNormal=20;
-			double tauGrowResistent=tauGrowNormal;
+			double tauGrowResistant=tauGrowNormal;
 			
 			
-			string FileName = "GurCyclesSimulationAsN.txt";
+			double N0Persisters ;
+			double N0normal;
+			double N0Resisters;
+			double NormalPersistersFraction;
+			double HighPersistersFraction;
+			
+			
+			string FileName = "CyclesSimulation"+ MutationRatio.ToString("0.##E+0")  +".txt";
 			System.IO.FileInfo myFile = new FileInfo(FileName);
 			myFile.Delete();
 			StreamWriter SR = new StreamWriter(FileName,false);
 			
-						
-			double[] N = new double[10];
-			for(int i=0;i<10;i++)
+			
+			
+			int Simulations = 1000;
+			
+			for (int sim=0;sim < Simulations;sim++)
 			{
-				N[i] = 10000*Math.Pow(10,((double)i/(double)2));
-			}
-			for (int n=0;n < N.Length;n++)
-			{
+				seed = sim;
 				
-				double Nf=Math.Floor((double)N[n]);
+				N0Persisters = 1e6;
+				N0normal=Nf - N0Persisters;
+				N0Resisters = 0;
+				NormalPersistersFraction = N0Persisters/N0normal;
 				
+				SimulationParameters SP ;
+				SP= new SimulationParameters(Nf,Nf,MutationRatio,tauNormalKill,tauPersisterKill ,tauGrowNormal,tauGrowResistant ,NormalPersistersFraction);
 				
-				int Simulations = 1000;
+				Well NormalWell = new Well(N0normal,N0Persisters,N0Resisters);
+				Simulation NormalSimulation= new Simulation(NormalWell,seed,SP);
 				
-				
-				for (int sim=0;sim < Simulations;sim++)
+				do
 				{
-					int	seed = sim;
-					double N0Persisters = 0;
-					double N0normal =Nf/2- N0Persisters;
-					double N0Resisters =Nf/2;
-					double NormalPersistersFraction=N0Persisters/N0normal;
-					
-					
-					N0Persisters = 0;
-					N0normal=Nf/2 - N0Persisters;
-					N0Resisters = Nf/2;
-					NormalPersistersFraction = N0Persisters/N0normal;
-					
-					Well NormalWell = new Well(N0normal,N0Persisters,N0Resisters);
-					Simulation NormalSimulation= new Simulation(NormalWell,seed,Nf,MutationRatio,tauNormalKill,tauPersisterKill ,tauGrowNormal,tauGrowResistent ,NormalPersistersFraction);
-					int cycle=0;
-					do
-					{
-						cycle++;
-						
-						NormalWell = NormalSimulation.DoDilution(NormalWell,100);
-						NormalWell = NormalSimulation.DoGrowing(NormalWell);
-						
-						//PrintPresentege(NormalWell.NumberOfNormal,Nf);
-					}
-					while (NormalWell.NumberOfResistant<Nf && NormalWell.NumberOfNormal<Nf);
-					SR.Write("{0}\t",cycle);
-					NormalSimulation = null;
-					PrintPresentege(sim+n*Simulations,Simulations*N.Length);
+					NormalWell = NormalSimulation.DoSycle();
 				}
-				SR.WriteLine();
+				while (NormalWell.NumberOfResistant<Nf);
+				
+				
+				
+				N0Persisters = 1e8;
+				N0normal=Nf - N0Persisters;
+				N0Resisters = 0;
+				HighPersistersFraction = N0Persisters/N0normal;
+				
+				SP = new SimulationParameters(Nf,Nf,MutationRatio,tauNormalKill,tauPersisterKill ,tauGrowNormal,tauGrowResistant,HighPersistersFraction );
+				
+				Well HighPersistenceWell = new Well(N0normal,N0Persisters,N0Resisters);
+				
+				Simulation HighPersistenceSimulation = new Simulation(HighPersistenceWell,seed,SP);
+				do
+				{
+					HighPersistenceWell = HighPersistenceSimulation.DoSycle();
+				}
+				while (HighPersistenceWell.NumberOfResistant<Nf);
+				
+				
+				SR.WriteLine("{0}\t{1}",NormalSimulation.Cycle,HighPersistenceSimulation.Cycle);
+				NormalSimulation = null;
+				HighPersistenceSimulation = null;
+				PrintPresentege(sim,Simulations);
 			}
+			
+			
 			
 			
 			SR.Close();
 			
 			
 		}
-		
-		private static void GurRandCyclesSimulation()
-		{
-			//double Nf=1e5;
-			double MutationRatio=0 ;
 
-			
-			double tauNormalKill=10;
-			double tauPersisterKill=100;
-			
-			double tauGrowNormal=20;
-			double tauGrowResistent=tauGrowNormal;
-			
-			
-			string FileName = "GurRandCyclesSimulationAsN.txt";
-			System.IO.FileInfo myFile = new FileInfo(FileName);
-			myFile.Delete();
-			StreamWriter SR = new StreamWriter(FileName,false);
-			
-						
-						
-				int Simulations = 800;
-				Random nrand = new Random(1);
-				
-				for (int sim=0;sim < Simulations;sim++)
-				{
-					double N = 10000*Math.Pow(10,(nrand.NextDouble()*4.5));
-					double Nf=Math.Floor(N);
-					
-					int	seed = sim+1600;
-					double N0Persisters = 0;
-					double N0normal = Math.Floor(Nf/2)- N0Persisters;
-					double N0Resisters =Math.Floor(Nf/2);
-					double NormalPersistersFraction=N0Persisters/N0normal;
-					
-					
-					N0Persisters = 0;
-					N0normal=Nf/2 - N0Persisters;
-					N0Resisters = Nf/2;
-					NormalPersistersFraction = N0Persisters/N0normal;
-					
-					Well NormalWell = new Well(N0normal,N0Persisters,N0Resisters);
-					Simulation NormalSimulation= new Simulation(NormalWell,seed,Nf,MutationRatio,tauNormalKill,tauPersisterKill ,tauGrowNormal,tauGrowResistent ,NormalPersistersFraction);
-					int cycle=0;
-					do
-					{
-						cycle++;
-						
-						NormalWell = NormalSimulation.DoDilution(NormalWell,100);
-						NormalWell = NormalSimulation.DoGrowing(NormalWell);
-						
-						//PrintPresentege(NormalWell.NumberOfNormal,Nf);
-					}
-					while (NormalWell.NumberOfResistant<Nf && NormalWell.NumberOfNormal<Nf);
-					SR.WriteLine("{0}\t{1}",Nf,cycle);
-					NormalSimulation = null;
-					PrintPresentege(sim,Simulations);
-				}
-			
-			
-			SR.Close();
-			
-			
-		}
+		
+
 		
 //		public static void article_diferent_mu()
 //		{
@@ -164,7 +112,7 @@ namespace CyclicSimulatuin
 //			double tauKill=10;
 //
 //			double tauGrowNormal=20;
-//			double tauGrowResistent=tauGrowNormal*1.05;
+//			double tauGrowResistant=tauGrowNormal*1.05;
 //			double N0mutation = 0;
 //			double N0normal=1e10;
 //
@@ -182,7 +130,7 @@ namespace CyclicSimulatuin
 //			{
 //				for(int i=0;i<rep;i++)
 //				{
-//					mySimulation[sim,i]= new Simulation(Nf,MutationRatio[sim],i,tauKill ,tauGrowNormal,tauGrowResistent );
+//					mySimulation[sim,i]= new Simulation(Nf,MutationRatio[sim],i,tauKill ,tauGrowNormal,tauGrowResistant );
 //					myTest[sim,i] = new Well(N0normal,0,N0mutation);
 //				}
 //
@@ -224,7 +172,7 @@ namespace CyclicSimulatuin
 //			double tauKill=10;
 //
 //			double tauGrowNormal=20;
-//			double tauGrowResistent=20;
+//			double tauGrowResistant=20;
 //			double N0mutation = 5000;
 //			double N0normal=5000;
 //
@@ -239,7 +187,7 @@ namespace CyclicSimulatuin
 //			//SR.WriteLine(myTest.NumberOfResistant);
 //			for(int i=0;i<1000;i++)
 //			{
-//				Simulation mySimulation= new Simulation(Nf,MutationRatio,i,tauKill ,tauGrowNormal,tauGrowResistent );
+//				Simulation mySimulation= new Simulation(Nf,MutationRatio,i,tauKill ,tauGrowNormal,tauGrowResistant );
 //				myTest = new Well(N0normal,0,N0mutation);
 //				int j=0;
 //				while(myTest.NumberOfResistant !=0 && myTest.NumberOfNormal !=0)
@@ -264,7 +212,7 @@ namespace CyclicSimulatuin
 //			double tauKill=10;
 //
 //			double tauGrowNormal=20;
-//			double tauGrowResistent=tauGrowNormal;//*1.05;
+//			double tauGrowResistant=tauGrowNormal;//*1.05;
 //			double N0mutation = 5e3;
 //			double N0normal=5e3;
 //
@@ -278,7 +226,7 @@ namespace CyclicSimulatuin
 //
 //			for (int sim=0;sim<sims;sim++)
 //			{
-//				mySimulation[sim]= new Simulation(Nf,MutationRatio,sim,tauKill ,tauGrowNormal,tauGrowResistent );
+//				mySimulation[sim]= new Simulation(Nf,MutationRatio,sim,tauKill ,tauGrowNormal,tauGrowResistant );
 //				myTest[sim] = new Well(N0normal,0,N0mutation);
 //
 //			}
@@ -315,7 +263,7 @@ namespace CyclicSimulatuin
 //			double tauKill=10;
 //
 //			double tauGrowNormal=20;
-//			double tauGrowResistent=tauGrowNormal*1.03;
+//			double tauGrowResistant=tauGrowNormal*1.03;
 //			double N0mutation = 0;
 //			double N0normal=1e4;
 //
@@ -329,7 +277,7 @@ namespace CyclicSimulatuin
 //
 //			for (int sim=0;sim<sims;sim++)
 //			{
-//				mySimulation[sim]= new Simulation(Nf,MutationRatio,sim,tauKill ,tauGrowNormal,tauGrowResistent );
+//				mySimulation[sim]= new Simulation(Nf,MutationRatio,sim,tauKill ,tauGrowNormal,tauGrowResistant );
 //				myTest[sim] = new Well(N0normal,0,N0mutation);
 //
 //			}
@@ -365,7 +313,7 @@ namespace CyclicSimulatuin
 			double tauKill=10;
 
 			double tauGrowNormal=20;
-			double tauGrowResistent=tauGrowNormal*1.005;
+			double tauGrowResistant=tauGrowNormal*1.005;
 			double N0mutation = 5e3;
 			double N0normal=5e3;
 
@@ -377,20 +325,23 @@ namespace CyclicSimulatuin
 			Well[] myTest=new Well[sims] ;
 			Simulation[] mySimulation = new Simulation[sims];
 
+			SimulationParameters SP = new SimulationParameters(Nf,Nf,
+			                                                   MutationRatio,
+			                                                   tauKill,
+			                                                   tauKill ,
+			                                                   tauGrowNormal,
+			                                                   tauGrowResistant ,
+			                                                   0);
+			
+			
 			for (int sim=0;sim<sims;sim++)
 			{
 				myTest[sim] = new Well(N0normal,0,N0mutation);
 				
+				
+				
 				mySimulation[sim]= new
-					Simulation(myTest[sim],
-					           sim,
-					           Nf,
-					           MutationRatio,
-					           tauKill,
-					           tauKill ,
-					           tauGrowNormal,
-					           tauGrowResistent ,
-					           0);
+					Simulation(myTest[sim],sim,SP);
 			}
 
 			int rounds=200;
@@ -436,6 +387,14 @@ namespace CyclicSimulatuin
 			Well[] myTest=new Well[sims] ;
 			Simulation[] mySimulation = new Simulation[sims];
 
+			SimulationParameters SP= new SimulationParameters(			Nf,Nf,
+			                                                  MutationRatio,
+			                                                  tauKill,
+			                                                  tauKill ,
+			                                                  tauGrowNormal,
+			                                                  tauGrowResistent ,
+			                                                  0);
+			
 			for (int sim=0;sim<sims;sim++)
 			{
 				myTest[sim] = new Well(N0normal,0,N0mutation);
@@ -443,13 +402,7 @@ namespace CyclicSimulatuin
 				mySimulation[sim]= new
 					Simulation(myTest[sim],
 					           sim+90,
-					           Nf,
-					           MutationRatio,
-					           tauKill,
-					           tauKill ,
-					           tauGrowNormal,
-					           tauGrowResistent ,
-					           0);
+					           SP);
 			}
 
 			int rounds=200;
@@ -573,83 +526,6 @@ namespace CyclicSimulatuin
 //		}
 		
 		
-		private static void CyclesSimulation()
-		{
-			double Nf=1e9;
-			double MutationRatio=1e-6 ;
-			int seed ;
-			double tauNormalKill=10;
-			double tauPersisterKill=100;
-			
-			double tauGrowNormal=20;
-			double tauGrowResistent=tauGrowNormal;
-			
-			
-			double N0Persisters ;
-			double N0normal;
-			double N0Resisters;
-			double NormalPersistersFraction;
-			double HighPersistersFraction;
-			
-			
-			
-			string FileName = "CyclesSimulation"+ MutationRatio.ToString("0.##E+0")  +".txt";
-			System.IO.FileInfo myFile = new FileInfo(FileName);
-			myFile.Delete();
-			StreamWriter SR = new StreamWriter(FileName,false);
-			
-			
-			
-			int Simulations = 1000;
-			
-			for (int sim=0;sim < Simulations;sim++)
-			{
-				seed = sim;
-				
-				N0Persisters = 1e6;
-				N0normal=Nf - N0Persisters;
-				N0Resisters = 0;
-				NormalPersistersFraction = N0Persisters/N0normal;
-				
-				Well NormalWell = new Well(N0normal,N0Persisters,N0Resisters);
-				Simulation NormalSimulation= new Simulation(NormalWell,seed,Nf,MutationRatio,tauNormalKill,tauPersisterKill ,tauGrowNormal,tauGrowResistent ,NormalPersistersFraction);
-				
-				do
-				{
-					NormalWell = NormalSimulation.DoSycle();
-				}
-				while (NormalWell.NumberOfResistant<Nf);
-				
-				
-				
-				N0Persisters = 1e8;
-				N0normal=Nf - N0Persisters;
-				N0Resisters = 0;
-				HighPersistersFraction = N0Persisters/N0normal;
-				
-				Well HighPersistenceWell = new Well(N0normal,N0Persisters,N0Resisters);
-				
-				Simulation HighPersistenceSimulation = new Simulation(HighPersistenceWell,seed,Nf,MutationRatio,tauNormalKill,tauPersisterKill ,tauGrowNormal,tauGrowResistent,HighPersistersFraction );
-				do
-				{
-					HighPersistenceWell = HighPersistenceSimulation.DoSycle();
-				}
-				while (HighPersistenceWell.NumberOfResistant<Nf);
-				
-				
-				SR.WriteLine("{0}\t{1}",NormalSimulation.Cycle,HighPersistenceSimulation.Cycle);
-				NormalSimulation = null;
-				HighPersistenceSimulation = null;
-				PrintPresentege(sim,Simulations);
-			}
-			
-			
-			
-			
-			SR.Close();
-			
-			
-		}
 		
 		public static void PrintPresentege(int ind,int from)
 		{

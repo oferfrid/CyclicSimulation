@@ -9,7 +9,7 @@
 
 using System;
 
-namespace CyclicSimulatuin
+namespace CyclicSimulation
 {
 	/// <summary>
 	/// Description of Simulation.
@@ -19,32 +19,25 @@ namespace CyclicSimulatuin
 		
 		
 		public Well SimulatedWall;
-		public double Nf;
-		public double MutationRatio;
-		public double tauNormalKill ;
-		public double tauPersisterKill;
-		public double tauGrowNormal ;
-		public double tauGrowResistent ;
-		public double Persistersfraction ;
+		public SimulationParameters SP;
 		
 		
 		public int Cycle;
 		
 		
-		public Simulation(Well _SimulatedWall,int seed,double _Nf,double _MutationRatio,double _tauNormalKill,double _tauPersisterKill ,double _tauGrowNormal,double _tauGrowResistent ,double _Persistersfraction)
+		public Simulation(Well _SimulatedWall,
+		                  int seed, 
+		                  SimulationParameters _SP)
 		{
 			Utils.Init(seed);
-			Nf=_Nf;
+			
 			
 			SimulatedWall = _SimulatedWall;
+			SP = _SP;
 			
-			MutationRatio = _MutationRatio;
-			tauNormalKill = _tauNormalKill;
-			tauPersisterKill = _tauPersisterKill;
-			tauGrowNormal = _tauGrowNormal;
-			tauGrowResistent=_tauGrowResistent;
-			Persistersfraction = _Persistersfraction;
 			Cycle=0;
+
+				
 		}
 		
 		public Well DoSycle()
@@ -60,13 +53,11 @@ namespace CyclicSimulatuin
 		}
 		
 		
-		
-		
 		public Well DoAMPKilling(Well _SimulatedWall,double Time)
 		{
 			
-			double PNormalLive = Math.Pow(2,-Time/tauNormalKill);
-			double PPersisterLive = Math.Pow(2,-Time/tauPersisterKill);
+			double PNormalLive = Math.Pow(2,-Time/SP.tauNormalKill); 
+			double PPersisterLive = Math.Pow(2,-Time/SP.tauPersisterKill); 
 			
 			double  NumberOfNormalLive = Utils.RandBinomial(_SimulatedWall.NumberOfNormal,PNormalLive);
 			double  NumberOfPersisterLive = Utils.RandBinomial(_SimulatedWall.NumberOfPersistent,PPersisterLive);
@@ -74,18 +65,25 @@ namespace CyclicSimulatuin
 			_SimulatedWall.NumberOfNormal =NumberOfNormalLive;
 			_SimulatedWall.NumberOfPersistent = NumberOfPersisterLive;
 			
-			_SimulatedWall.NumberOfResistant = Utils.NLogistic(Time,tauGrowResistent, _SimulatedWall.NumberOfResistant,Nf - NumberOfNormalLive - NumberOfPersisterLive);
+			_SimulatedWall.NumberOfResistant = Utils.NLogistic(Time,SP.tauGrowResistant, _SimulatedWall.NumberOfResistant,SP.NfKill - (NumberOfNormalLive + NumberOfPersisterLive));
 			SimulatedWall = _SimulatedWall;
 			return _SimulatedWall;
 		}
-		
+		/// <summary>
+		/// Grow well in the Well
+		/// </summary>
+		/// <param name="_SimulatedWall">Thew Well parameters to grow</param>
+		/// <returns>Well after growing stage</returns>
 		public  Well DoGrowing(Well _SimulatedWall)
 		{
+		//TODO: Change to persisters exponantial statistics.
 			_SimulatedWall.NumberOfNormal += _SimulatedWall.NumberOfPersistent;
 			_SimulatedWall.NumberOfPersistent = 0;
 			
-			double maxNumberOfNormalDivitions = (Nf - _SimulatedWall.NumberOfBacteria);
-			int maxNumberOfMutations = Convert.ToInt32(Utils.RandBinomial(maxNumberOfNormalDivitions,MutationRatio));
+			double maxNumberOfNormalDivitions = (SP.NfGrow - _SimulatedWall.NumberOfBacteria);
+			
+			//TODO: add random generation of the generation of Each Persister -> Normal state convertion.
+			int maxNumberOfMutations = Convert.ToInt32(Utils.RandBinomial(maxNumberOfNormalDivitions,SP.MutationRatio));
 
 			double[] genOfMutation ;
 			genOfMutation = new double[maxNumberOfMutations] ;
@@ -93,7 +91,7 @@ namespace CyclicSimulatuin
 			for(int i=0;i<maxNumberOfMutations;i++)
 			{
 				//find the actual generation of the mutation.
-				genOfMutation[i] = Utils.RandExponantial(Nf,_SimulatedWall.NumberOfNormal);
+				genOfMutation[i] = Utils.RandExponantial(SP.NfGrow,_SimulatedWall.NumberOfNormal);
 			}
 			
 			Array.Sort(genOfMutation);
@@ -109,38 +107,38 @@ namespace CyclicSimulatuin
 				genOfMutationDiff[i]=genOfMutation[i]-genOfMutation[i-1];
 			}
 			
-			double ResistentgenRatio = tauGrowResistent/tauGrowNormal ;
+			double ResistantgenRatio = SP.tauGrowResistant/SP.tauGrowNormal ;
 			int j=0;
 			do
 			{
 				Solver.N1 = _SimulatedWall.NumberOfNormal;
 				Solver.N2 = _SimulatedWall.NumberOfResistant;
-				Solver.Nf = Nf;
-				Solver.gen2retio = ResistentgenRatio;
+				Solver.Nf = SP.NfGrow;
+				Solver.gen2retio = ResistantgenRatio;
 				
 				double gen=(Solver.rtsafe(Solver.Function,Solver.dFunction,0,30,0.0001));
 				//Console.WriteLine("gen={0} F(gen={0})={1}",gen,Solver.Function(gen));
 				if(	j>=maxNumberOfMutations || genOfMutation[j]>=gen)
 				{
 					_SimulatedWall.NumberOfNormal = Utils.NExponantial(gen,_SimulatedWall.NumberOfNormal);
-					_SimulatedWall.NumberOfResistant = Utils.NExponantial(gen*ResistentgenRatio,_SimulatedWall.NumberOfResistant);
+					_SimulatedWall.NumberOfResistant = Utils.NExponantial(gen*ResistantgenRatio,_SimulatedWall.NumberOfResistant);
 				}
 				else
 				{
 					_SimulatedWall.NumberOfNormal = Utils.NExponantial(genOfMutationDiff[j],_SimulatedWall.NumberOfNormal)-1;
-					_SimulatedWall.NumberOfResistant = Utils.NExponantial(genOfMutationDiff[j]*ResistentgenRatio,_SimulatedWall.NumberOfResistant)+1;
+					_SimulatedWall.NumberOfResistant = Utils.NExponantial(genOfMutationDiff[j]*ResistantgenRatio,_SimulatedWall.NumberOfResistant)+1;
 					
 				}
 				
 				j++;
 			}
-			while(_SimulatedWall.NumberOfBacteria<Nf);
+			while(_SimulatedWall.NumberOfBacteria<SP.NfGrow);
 			
 //			for(int i=0;i<maxNumberOfMutations;i++)
 //			{
 //				Well PostMutation;
 //				PostMutation.NumberOfNormal = Utils.NExponantial(genOfMutationDiff[i],_SimulatedWall.NumberOfNormal)-1;
-//				PostMutation.NumberOfResistant = Utils.NExponantial(genOfMutationDiff[i]*ResistentgenRatio,_SimulatedWall.NumberOfResistant)+1;
+//				PostMutation.NumberOfResistant = Utils.NExponantial(genOfMutationDiff[i]*ResistantgenRatio,_SimulatedWall.NumberOfResistant)+1;
 //				if (PostMutation.NumberOfBacteria < Nf)
 //				{
 //					_SimulatedWall = PostMutation;
@@ -150,18 +148,19 @@ namespace CyclicSimulatuin
 //					Solver.N1 = _SimulatedWall.NumberOfNormal;
 //					Solver.N2 = _SimulatedWall.NumberOfResistant;
 //					Solver.Nf = Nf;
-//					Solver.gen2retio = ResistentgenRatio;
+//					Solver.gen2retio = ResistantgenRatio;
 //
 //					double gen=(Solver.rtsafe(Solver.Function,Solver.dFunction,1,30,0.0001));
 //					Console.WriteLine("gen={0} F(gen={0})={1}",gen,Solver.Function(gen));
 //
 //					_SimulatedWall.NumberOfNormal = Utils.NExponantial(gen,_SimulatedWall.NumberOfNormal);
-//					_SimulatedWall.NumberOfResistant = Utils.NExponantial(gen*ResistentgenRatio,_SimulatedWall.NumberOfResistant);
+//					_SimulatedWall.NumberOfResistant = Utils.NExponantial(gen*ResistantgenRatio,_SimulatedWall.NumberOfResistant);
 //					break;
 //				}
 //			}
 			
-			_SimulatedWall.NumberOfPersistent = Persistersfraction*_SimulatedWall.NumberOfNormal;
+			//init the number of persisters from the known fraction.
+			_SimulatedWall.NumberOfPersistent = SP.Persistersfraction*_SimulatedWall.NumberOfNormal;
 			_SimulatedWall.NumberOfNormal -=_SimulatedWall.NumberOfPersistent;
 				
 			SimulatedWall = _SimulatedWall;

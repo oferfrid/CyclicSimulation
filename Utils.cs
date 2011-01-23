@@ -9,7 +9,7 @@
 
 using System;
 
-namespace CyclicSimulatuin
+namespace CyclicSimulation
 {
 	/// <summary>
 	/// Description of Utils.
