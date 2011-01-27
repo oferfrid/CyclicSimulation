@@ -1,7 +1,7 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
-# SharpDevelop 3.2.0.5777
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+# SharpDevelop 4.0.0.7070
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CyclicSimulation", "CyclicSimulation.csproj", "{CCEB6580-1C7B-444C-9166-6AA6ADCD7E85}"
 EndProject
 Global

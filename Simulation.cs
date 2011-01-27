@@ -111,12 +111,23 @@ namespace CyclicSimulation
 			int j=0;
 			do
 			{
+				
+				double gen;
+				// Can not grow (to menny bacteria)
+				if (_SimulatedWall.NumberOfNormal + _SimulatedWall.NumberOfResistant > SP.NfGrow)
+				{
+					gen=0;
+				}
+				else
+				{
 				Solver.N1 = _SimulatedWall.NumberOfNormal;
 				Solver.N2 = _SimulatedWall.NumberOfResistant;
 				Solver.Nf = SP.NfGrow;
 				Solver.gen2retio = ResistantgenRatio;
 				
-				double gen=(Solver.rtsafe(Solver.Function,Solver.dFunction,0,30,0.0001));
+				
+				 gen=(Solver.rtsafe(Solver.Function,Solver.dFunction,0,30,0.0001));
+				}
 				//Console.WriteLine("gen={0} F(gen={0})={1}",gen,Solver.Function(gen));
 				if(	j>=maxNumberOfMutations || genOfMutation[j]>=gen)
 				{

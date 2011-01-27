@@ -15,10 +15,41 @@ namespace CyclicSimulation
 	{
 		public static void Main(string[] args)
 		{
-			CyclesSimulation();
+			NoDilutionCyclesSimulation();
 			
 		}
 
+		
+		private static void NoDilutionCyclesSimulation()
+		{
+			
+			double Nf=1e9;
+			double MutationRatio=1e-8 ;
+			int seed =1;
+			double tauNormalKill=10;
+			double tauPersisterKill=100;
+			
+			double tauGrowNormal=20;
+			double tauGrowResistant=tauGrowNormal;
+			
+			
+			
+			double	N0Persisters = 1e6;
+			double	N0normal=Nf - N0Persisters;
+			double	N0Resisters = 0;
+			double	NormalPersistersFraction = N0Persisters/N0normal;
+			
+			SimulationParameters SP = new SimulationParameters(Nf,10*Nf,MutationRatio,tauNormalKill,tauPersisterKill ,tauGrowNormal,tauGrowResistant ,NormalPersistersFraction);
+			Well NormalWell = new Well(N0normal,N0Persisters,N0Resisters);
+			Simulation NormalSimulation= new Simulation(NormalWell,seed,SP);
+			
+			do
+			{
+				NormalWell = NormalSimulation.DoSycle();
+			}
+			while (NormalWell.NumberOfResistant<Nf);
+			
+		}
 		private static void CyclesSimulation()
 		{
 			double Nf=1e9;
