@@ -23,6 +23,7 @@ namespace CyclicSimulation
 		public double tauGrowNormal;
 		public double tauGrowResistant;
 		public double Persistersfraction;
+		public double Dilution;
 		
 		public SimulationParameters(
 			double _NfGrow,
@@ -32,7 +33,8 @@ namespace CyclicSimulation
 			double _tauPersisterKill,
 			double _tauGrowNormal,
 			double _tauGrowResistant,
-			double _Persistersfraction)
+			double _Persistersfraction,
+			double _Dilution)
 		{
 			
 			NfGrow = _NfGrow;
@@ -43,7 +45,8 @@ namespace CyclicSimulation
 			tauGrowNormal=_tauGrowNormal;
 			tauGrowResistant= _tauGrowResistant;
 			Persistersfraction=_Persistersfraction;
-				
+			Dilution = _Dilution;
+			
 		}
 		
 		
@@ -69,7 +72,8 @@ namespace CyclicSimulation
 				this.tauPersisterKill == other.tauPersisterKill &
 				this.tauGrowNormal == other.tauGrowNormal &
 				this.tauGrowResistant == other.tauGrowResistant &
-				this.Persistersfraction == other.Persistersfraction ;
+				this.Persistersfraction == other.Persistersfraction &
+				this.Dilution ==other.Dilution;
 		}
 		
 		public override int GetHashCode()
@@ -82,7 +86,8 @@ namespace CyclicSimulation
 				tauPersisterKill.GetHashCode()^
 				tauGrowNormal.GetHashCode()^
 				tauGrowResistant.GetHashCode()^
-				Persistersfraction.GetHashCode();
+				Persistersfraction.GetHashCode()^
+				Dilution.GetHashCode();
 		}
 		
 		public static bool operator ==(SimulationParameters left, SimulationParameters right)

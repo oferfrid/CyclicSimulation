@@ -26,7 +26,7 @@ namespace CyclicSimulation
 		
 		
 		public Simulation(Well _SimulatedWall,
-		                  int seed, 
+		                  int seed,
 		                  SimulationParameters _SP)
 		{
 			Utils.Init(seed);
@@ -37,13 +37,13 @@ namespace CyclicSimulation
 			
 			Cycle=0;
 
-				
+			
 		}
 		
 		public Well DoSycle()
 		{
 			Cycle++;
-			SimulatedWall=DoDilution(SimulatedWall,100);
+			SimulatedWall=DoDilution(SimulatedWall,SP.Dilution);
 			SimulatedWall=DoAMPKilling(SimulatedWall,260);
 			SimulatedWall=DoGrowing(SimulatedWall);
 			//SimulatedWall=DoDilution(SimulatedWall,200);
@@ -56,8 +56,8 @@ namespace CyclicSimulation
 		public Well DoAMPKilling(Well _SimulatedWall,double Time)
 		{
 			
-			double PNormalLive = Math.Pow(2,-Time/SP.tauNormalKill); 
-			double PPersisterLive = Math.Pow(2,-Time/SP.tauPersisterKill); 
+			double PNormalLive = Math.Pow(2,-Time/SP.tauNormalKill);
+			double PPersisterLive = Math.Pow(2,-Time/SP.tauPersisterKill);
 			
 			double  NumberOfNormalLive = Utils.RandBinomial(_SimulatedWall.NumberOfNormal,PNormalLive);
 			double  NumberOfPersisterLive = Utils.RandBinomial(_SimulatedWall.NumberOfPersistent,PPersisterLive);
@@ -76,7 +76,8 @@ namespace CyclicSimulation
 		/// <returns>Well after growing stage</returns>
 		public  Well DoGrowing(Well _SimulatedWall)
 		{
-		//TODO: Change to persisters exponantial statistics.
+			//TODO: Change to persisters exponantial statistics.
+			//TODO: The result number is not an Integer.
 			_SimulatedWall.NumberOfNormal += _SimulatedWall.NumberOfPersistent;
 			_SimulatedWall.NumberOfPersistent = 0;
 			
@@ -120,13 +121,13 @@ namespace CyclicSimulation
 				}
 				else
 				{
-				Solver.N1 = _SimulatedWall.NumberOfNormal;
-				Solver.N2 = _SimulatedWall.NumberOfResistant;
-				Solver.Nf = SP.NfGrow;
-				Solver.gen2retio = ResistantgenRatio;
-				
-				
-				 gen=(Solver.rtsafe(Solver.Function,Solver.dFunction,0,30,0.0001));
+					Solver.N1 = _SimulatedWall.NumberOfNormal;
+					Solver.N2 = _SimulatedWall.NumberOfResistant;
+					Solver.Nf = SP.NfGrow;
+					Solver.gen2retio = ResistantgenRatio;
+					
+					
+					gen=(Solver.rtsafe(Solver.Function,Solver.dFunction,0,30,0.0001));
 				}
 				//Console.WriteLine("gen={0} F(gen={0})={1}",gen,Solver.Function(gen));
 				if(	j>=maxNumberOfMutations || genOfMutation[j]>=gen)
@@ -171,9 +172,9 @@ namespace CyclicSimulation
 //			}
 			
 			//init the number of persisters from the known fraction.
-			_SimulatedWall.NumberOfPersistent = SP.Persistersfraction*_SimulatedWall.NumberOfNormal;
-			_SimulatedWall.NumberOfNormal -=_SimulatedWall.NumberOfPersistent;
-				
+			_SimulatedWall.NumberOfPersistent = Math.Round(SP.Persistersfraction*_SimulatedWall.NumberOfNormal);
+			_SimulatedWall.NumberOfNormal -=Math.Round(_SimulatedWall.NumberOfPersistent);
+			
 			SimulatedWall = _SimulatedWall;
 			return _SimulatedWall;
 			

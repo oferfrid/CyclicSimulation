@@ -9,6 +9,7 @@
     <AssemblyName>CyclicSimulation</AssemblyName>
     <TargetFrameworkProfile />
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <StartArguments>1e-9 100 1e8</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -17,6 +18,7 @@
     <Optimize>False</Optimize>
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <StartAction>Project</StartAction>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <OutputPath>bin\Release\</OutputPath>
